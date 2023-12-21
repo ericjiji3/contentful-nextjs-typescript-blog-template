@@ -33,24 +33,24 @@ const fetchBlogPost = async (slug: string): Promise<BlogItem> => {
   };
   const queryResult = await client.getEntries(queryOptions);
   console.log(queryResult.items[0]);
-  const formResult = {
-    fields: {
-      title: queryResult.items[0].fields.title,
-      slug: queryResult.items[0].fields.slug,
-      date: queryResult.items[0].fields.date,
-      content: queryResult.items[0].fields.content,
-      featuredImage: queryResult.items[0].fields.featuredImage,
-  }
+  // const formResult = {
+  //   fields: {
+  //     title: queryResult.items[0].fields.title,
+  //     slug: queryResult.items[0].fields.slug,
+  //     date: queryResult.items[0].fields.date,
+  //     content: queryResult.items[0].fields.content,
+  //     featuredImage: queryResult.items[0].fields.featuredImage,
+  // }
     
-  }
-  return formResult;
+  // }
+  return queryResult.items[0];
 };
 
 export default async function BlogPage(props: BlogPageProps) {
   const { params } = props;
   const { slug } = params;
   const article = await fetchBlogPost(slug);
-  const { title, date, content, featuredImage } = article;
+  const { title, date, content, featuredImage } = article.fields;
 
   return (
     <main className="min-h-screen p-24 flex justify-center">

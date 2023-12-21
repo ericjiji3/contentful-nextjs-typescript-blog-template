@@ -5,8 +5,8 @@ export type BlogItem = {
         title: string;
         slug: string;
         date: Date;
-        content: Document;
-        featuredImage: string;
+        content: Document | null;
+        featuredImage: string | null;
     }
 }
 export type BlogItems = ReadonlyArray<BlogItem>;
