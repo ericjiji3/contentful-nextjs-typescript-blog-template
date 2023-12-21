@@ -25,7 +25,7 @@ export async function generateStaticParams(): Promise<BlogPostPageParams[]> {
 // For each blog post, tell Next.js which metadata
 // (e.g. page title) to display.
 export async function generateMetadata({ params }: BlogPostPageProps, parent: ResolvingMetadata): Promise<Metadata> {
-	const blogPost = await fetchBlogPost({modelId: 'webDev', slug: params.slug})
+	const blogPost = await fetchBlogPost({modelId: 'personal', slug: params.slug})
 
 	if (!blogPost) {
 		return notFound()
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: BlogPostPageProps, parent: Re
 async function BlogPostPage({ params }: BlogPostPageProps) {
 	// Fetch a single blog post by slug,
 	// using the content preview if draft mode is enabled:
-	const blogPost = await fetchBlogPost({modelId: 'webDev', slug: params.slug })
+	const blogPost = await fetchBlogPost({modelId: 'personal', slug: params.slug })
   console.log(blogPost)
 	if (!blogPost) {
 		// If a blog post can't be found,

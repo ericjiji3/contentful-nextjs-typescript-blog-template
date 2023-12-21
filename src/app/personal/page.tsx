@@ -1,5 +1,3 @@
-
-import { draftMode } from 'next/headers'
 import { fetchBlogPosts } from '../../contentful/blogPosts'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -7,7 +5,7 @@ import Image from 'next/image'
 async function Home() {
 	// Fetch blog posts using the content preview
 	// if draft mode is enabled:
-	const blogPosts = await fetchBlogPosts('webDev')
+	const blogPosts = await fetchBlogPosts('personal')
 
 	return (
 		<main className="p-[6vw]">
@@ -17,7 +15,7 @@ async function Home() {
 					{blogPosts.map((blogPost) => {
 						return (
 							<li key={blogPost.slug}>
-								<Link href={`/webdev/${blogPost.slug}`}>
+								<Link href={`/personal/${blogPost.slug}`}>
                 {blogPost.featuredImage && (
                   <Image
                     src={blogPost.featuredImage.src}

@@ -37,13 +37,13 @@ export function parseContentfulBlogPost(blogPostEntry?: BlogPostEntry): BlogPost
 interface FetchBlogPostsOptions {
 	preview: boolean
 }
-export async function fetchBlogPosts(): Promise<BlogPost[]> {
+export async function fetchBlogPosts(modelId?: string): Promise<BlogPost[]> {
 	const contentful = contentfulClient()
 
 	const blogPostsResult = await contentful.getEntries<TypeBlogPostSkeleton>({
-		content_type: 'webDev',
+		content_type: modelId,
 		include: 2,
-		order: ['fields.title'],
+		// order: ['fields.title'],
 	})
 
 	return blogPostsResult.items.map((blogPostEntry) => parseContentfulBlogPost(blogPostEntry) as BlogPost)
@@ -52,13 +52,14 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
 // A function to fetch a single blog post by its slug.
 // Optionally uses the Contentful content preview.
 interface FetchBlogPostOptions {
-	slug: string
+	modelId: string,
+    slug: string
 }
-export async function fetchBlogPost({ slug }: FetchBlogPostOptions): Promise<BlogPost | null> {
+export async function fetchBlogPost({ modelId, slug }: FetchBlogPostOptions): Promise<BlogPost | null> {
 	const contentful = contentfulClient()
 
 	const blogPostsResult = await contentful.getEntries<TypeBlogPostSkeleton>({
-		content_type: 'webDev',
+		content_type: modelId,
 		'fields.slug': slug,
 		include: 2,
 	})

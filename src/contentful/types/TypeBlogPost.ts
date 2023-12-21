@@ -8,7 +8,8 @@ export interface TypeBlogPostFields {
 	featuredImage?: EntryFieldTypes.AssetLink
 }
 
-export type TypeBlogPostSkeleton = EntrySkeletonType<TypeBlogPostFields, 'webDev'>
+export type TypeBlogPostSkeleton = EntrySkeletonType<TypeBlogPostFields>
+
 export type TypeBlogPost<Modifiers extends ChainModifiers, Locales extends LocaleCode> = Entry<
 	TypeBlogPostSkeleton,
 	Modifiers,
