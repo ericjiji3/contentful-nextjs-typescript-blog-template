@@ -1,80 +1,77 @@
-import { BlogItem } from "@/app/types";
-import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import { createClient } from "contentful";
-import Image from 'next/image';
 
-const client = createClient({
-  space: `${process.env.SPACE_ID}`,
-  accessToken: `${process.env.ACCESS_TOKEN}`,
-});
+import { Metadata, ResolvingMetadata } from 'next'
+import { notFound } from 'next/navigation'
+import { fetchBlogPost, fetchBlogPosts } from '../../../contentful/blogPosts'
+import Link from 'next/link'
+import RichText from '../../../contentful/RichText'
+import Image from 'next/image'
 
-type BlogPageProps = {
-  params: {
-    slug: string;
-  };
-};
-
-export async function generateStaticParams() {
-  const queryOptions = {
-    content_type: "webDev",
-    select: "fields.slug",
-  };
-
-  const articles = await client.getEntries(queryOptions);
-  return articles.items.map((article) => ({
-    slug: article.fields.slug,
-  }));
+interface BlogPostPageParams {
+	slug: string
 }
 
-const fetchBlogPost = async (slug: string): Promise<BlogItem> => {
-  const queryOptions = {
-    content_type: "webDev",
-    "fields.slug[match]": slug,
-  };
-  const queryResult = await client.getEntries(queryOptions);
-  console.log(queryResult.items[0]);
-  // const formResult = {
-  //   fields: {
-  //     title: queryResult.items[0].fields.title,
-  //     slug: queryResult.items[0].fields.slug,
-  //     date: queryResult.items[0].fields.date,
-  //     content: queryResult.items[0].fields.content,
-  //     featuredImage: queryResult.items[0].fields.featuredImage,
-  // }
-    
-  // }
-  return queryResult.items[0];
-};
-
-export default async function BlogPage(props: BlogPageProps) {
-  const { params } = props;
-  const { slug } = params;
-  const article = await fetchBlogPost(slug);
-  const { title, date, content, featuredImage } = article.fields;
-
-  return (
-    <main className="min-h-screen p-24 flex justify-center">
-      <div className="max-w-2xl">
-      <Image
-                src={`https:${featuredImage[0].fields.file.url}`}
-                width={200}
-                height={200}
-                alt="oops"
-              />
-        <h1 className="font-extrabold text-3xl mb-2">{title}</h1>
-
-        <p className="mb-6 text-slate-400 ">
-          Posted on{" "}
-          {new Date(date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
-        <div className="[&>p]:mb-8 [&>h2]:font-extrabold">
-          {documentToReactComponents(content)}
-        </div>
-      </div>
-    </main>
-  );
+interface BlogPostPageProps {
+	params: BlogPostPageParams
 }
+
+// Tell Next.js about all our blog posts so
+// they can be statically generated at build time.
+export async function generateStaticParams(): Promise<BlogPostPageParams[]> {
+	const blogPosts = await fetchBlogPosts()
+
+	return blogPosts.map((post) => ({ slug: post.slug }))
+}
+
+// For each blog post, tell Next.js which metadata
+// (e.g. page title) to display.
+export async function generateMetadata({ params }: BlogPostPageProps, parent: ResolvingMetadata): Promise<Metadata> {
+	const blogPost = await fetchBlogPost({ slug: params.slug})
+
+	if (!blogPost) {
+		return notFound()
+	}
+
+	return {
+		title: blogPost.title,
+	}
+}
+
+// The actual BlogPostPage component.
+async function BlogPostPage({ params }: BlogPostPageProps) {
+	// Fetch a single blog post by slug,
+	// using the content preview if draft mode is enabled:
+	const blogPost = await fetchBlogPost({ slug: params.slug })
+  console.log(blogPost)
+	if (!blogPost) {
+		// If a blog post can't be found,
+		// tell Next.js to render a 404 page.
+		return notFound()
+	}
+
+	return (
+		<main className="p-[6vw]">
+			<Link href="/webdev">← Posts</Link>
+			<div className="prose mt-8 border-t pt-8">
+				{/* Render the blog post image */}
+				{blogPost.featuredImage && (
+					<Image
+						src={blogPost.featuredImage.src}
+						// Use the Contentful featuredImages API to render
+						// responsive featuredImages. No next/featuredImage required:
+						width={300}
+						height={300}
+						alt={blogPost.featuredImage.alt}
+					/>
+				)}
+
+				{/* Render the blog post title */}
+				<h1>{blogPost.title}</h1>
+
+				{/* Render the blog post body */}
+				<RichText document={blogPost.content} />
+			</div>
+		</main>
+	)
+}
+
+export default BlogPostPage

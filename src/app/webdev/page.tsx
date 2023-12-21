@@ -1,52 +1,43 @@
-import Image from "next/image";
-import Link from "next/link";
-import { BlogQueryResult } from "../types";
-import { createClient } from "contentful";
 
-const client = createClient({
-  space: `${process.env.SPACE_ID}`,
-  accessToken: `${process.env.ACCESS_TOKEN}`,
-});
+import { draftMode } from 'next/headers'
+import { fetchBlogPosts } from '../../contentful/blogPosts'
+import Link from 'next/link'
+import Image from 'next/image'
 
-const getBlogEntries = async (): Promise<BlogQueryResult> => {
-  const entries = await client.getEntries({ content_type: "webDev" });
-  console.log(entries.items[0].fields.featuredImage[0].fields.file.url)
-  return entries;
-};
+async function Home() {
+	// Fetch blog posts using the content preview
+	// if draft mode is enabled:
+	const blogPosts = await fetchBlogPosts()
 
-export default async function Home() {
-  const blogEntries = await getBlogEntries();
-  return (
-    <main className="flex min-h-screen flex-col p-24 gap-y-8">
-      <h2>BUT THIS WILL STAY THIS SAME RIGHT</h2>
-      {blogEntries.items.map((singlePost) => {
-        const { slug, title, date, featuredImage } = singlePost.fields;
-
-        return (
-          <div key={slug}>
-            <Link className="group" href={`/webdev/${slug}`}>
-              <Image
-                src={`https:${featuredImage[0].fields.file.url}`}
-                width={200}
-                height={200}
-                alt="oops"
-              />
-              <h2 className="font-extrabold text-xl group-hover:text-blue-500 transition-colors">
-                {title}
-              </h2>
-
-              <span>
-                Posted on{" "}
-                {new Date(date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </Link>
-          </div>
-        );
-      })}
-    </main>
-  );
+	return (
+		<main className="p-[6vw]">
+			<div className="prose">
+				<h1>My Contentful Blog</h1>
+				<ul>
+					{blogPosts.map((blogPost) => {
+						return (
+							<li key={blogPost.slug}>
+								<Link href={`/webdev/${blogPost.slug}`}>
+                {blogPost.featuredImage && (
+                  <Image
+                    src={blogPost.featuredImage.src}
+                    // Use the Contentful featuredImages API to render
+                    // responsive featuredImages. No next/featuredImage required:
+                    width={300}
+                    height={300}
+                    alt={blogPost.featuredImage.alt}
+                  />
+                )}
+                  <h2>{blogPost.title}</h2>
+                
+                </Link>
+							</li>
+						)
+					})}
+				</ul>
+			</div>
+		</main>
+	)
 }
+
+export default Home
